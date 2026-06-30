@@ -1,0 +1,23 @@
+[project]
+name = "viral-decoder"
+version = "0.1.0"
+description = "Decode viral X content — analyze profiles and generate structured account reports"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "httpx>=0.27.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["viral-decoder-skill"]
+include = ["scripts*"]

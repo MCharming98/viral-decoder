@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ViralDecoder — @{username}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: #0f1117;
+      color: #e8eaed;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .report {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      background: #1a1d27;
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 2px solid #1d9bf0;
+    }
+
+    .avatar-fallback {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: #1d9bf0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .hero-text h1 { font-size: 1.6rem; font-weight: 700; }
+    .hero-text .handle { color: #1d9bf0; font-size: 1rem; margin-top: 2px; }
+    .hero-text .handle a { color: inherit; text-decoration: none; }
+    .hero-text .bio { color: #9aa0a6; margin-top: 8px; font-size: 0.95rem; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .chip {
+      background: rgba(29,155,240,0.12);
+      color: #1d9bf0;
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+
+    /* ── Stat cards ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: #1a1d27;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .stat-card .value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #e8eaed;
+    }
+
+    .stat-card .label {
+      font-size: 0.8rem;
+      color: #9aa0a6;
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Sections ── */
+    .section-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #9aa0a6;
+      margin-bottom: 16px;
+      padding-left: 12px;
+      border-left: 3px solid #1d9bf0;
+    }
+
+    .summary-block {
+      background: #1a1d27;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(255,255,255,0.06);
+      color: #c4c7cc;
+      font-size: 0.95rem;
+    }
+
+    /* ── Chart grid ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .chart-card {
+      background: #1a1d27;
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .chart-card h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #e8eaed;
+    }
+
+    .chart-wrap {
+      position: relative;
+      height: 280px;
+    }
+
+    .chart-wrap.tall { height: 360px; }
+
+    /* ── Heatmap ── */
+    .heatmap {
+      display: grid;
+      grid-template-columns: 48px repeat(24, 1fr);
+      gap: 2px;
+      font-size: 0.65rem;
+    }
+
+    .heatmap .day-label {
+      display: flex;
+      align-items: center;
+      color: #9aa0a6;
+      font-weight: 500;
+    }
+
+    .heatmap .cell {
+      aspect-ratio: 1;
+      border-radius: 3px;
+      background: rgba(29,155,240,0.08);
+      min-width: 0;
+    }
+
+    .heatmap .hour-label {
+      text-align: center;
+      color: #6b7280;
+      padding-top: 4px;
+    }
+
+    /* ── Top posts ── */
+    .post-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+
+    .post-card {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      background: #1a1d27;
+      border-radius: 12px;
+      padding: 16px 20px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .post-rank {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #1d9bf0;
+      min-width: 32px;
+    }
+
+    .post-card a {
+      color: #e8eaed;
+      text-decoration: none;
+      font-size: 0.92rem;
+    }
+
+    .post-card a:hover { color: #1d9bf0; text-decoration: underline; }
+
+    .post-meta {
+      font-size: 0.78rem;
+      color: #9aa0a6;
+      margin-top: 4px;
+    }
+
+    /* ── Takeaways ── */
+    .takeaways {
+      background: #1a1d27;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .takeaways ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .takeaways li {
+      padding-left: 20px;
+      position: relative;
+      color: #c4c7cc;
+      font-size: 0.92rem;
+    }
+
+    .takeaways li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 8px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #1d9bf0;
+    }
+
+    .pull-quote {
+      border-left: 3px solid #00ba7c;
+      padding: 16px 20px;
+      margin-top: 16px;
+      color: #c4c7cc;
+      font-style: italic;
+      font-size: 0.95rem;
+    }
+
+    /* ── Footer ── */
+    .meta {
+      text-align: center;
+      color: #6b7280;
+      font-size: 0.78rem;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .hero { flex-direction: column; align-items: center; text-align: center; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="report">
+
+    <!-- HERO: replace placeholders -->
+    <header class="hero">
+      <img class="avatar" src="{profile_image_url}" alt="{name}">
+      <div class="hero-text">
+        <h1>{name}</h1>
+        <p class="handle"><a href="https://x.com/{username}" target="_blank" rel="noopener">@{username}</a></p>
+        <p class="bio">{bio}</p>
+        <div class="chips">
+          <span class="chip">{location}</span>
+          <span class="chip">Joined {joined}</span>
+          <span class="chip">{verified_status}</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- STAT CARDS -->
+    <section class="stats-row">
+      <div class="stat-card"><div class="value">{followers}</div><div class="label">Followers</div></div>
+      <div class="stat-card"><div class="value">{following}</div><div class="label">Following</div></div>
+      <div class="stat-card"><div class="value">{posts}</div><div class="label">Posts</div></div>
+      <div class="stat-card"><div class="value">{engagement_rate}%</div><div class="label">Eng. Rate</div></div>
+    </section>
+
+    <!-- PROFILE SUMMARY -->
+    <p class="section-title">Profile</p>
+    <div class="summary-block">{profile_summary}</div>
+
+    <!-- CHARTS ROW 1 -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>Reach</h3>
+        <div class="chart-wrap"><canvas id="reachChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <h3>Content Mix</h3>
+        <div class="chart-wrap"><canvas id="contentMixChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW 2 -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>Posting Activity (UTC)</h3>
+        <div class="chart-wrap tall" id="heatmapContainer">
+          <!-- CSS grid heatmap: 7 days × 24 hours -->
+        </div>
+      </div>
+      <div class="chart-card">
+        <h3>Avg Engagement per Post</h3>
+        <div class="chart-wrap"><canvas id="engagementChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- THEMES -->
+    <p class="section-title">Top Themes</p>
+    <div class="chart-card" style="margin-bottom:24px">
+      <div class="chart-wrap"><canvas id="themesChart"></canvas></div>
+    </div>
+
+    <!-- TOP POSTS -->
+    <p class="section-title">Top Posts</p>
+    <div class="post-list">
+      <div class="post-card">
+        <span class="post-rank">1</span>
+        <div>
+          <a href="{url}" target="_blank" rel="noopener">{truncated_text}</a>
+          <p class="post-meta">{engagement} engagement · {date} · {media_type}</p>
+        </div>
+      </div>
+      <!-- repeat for top 5 -->
+    </div>
+
+    <!-- TAKEAWAYS -->
+    <p class="section-title">Key Takeaways</p>
+    <div class="takeaways">
+      <ul>
+        <li>{takeaway_1}</li>
+        <li>{takeaway_2}</li>
+        <li>{takeaway_3}</li>
+      </ul>
+      <div class="pull-quote">{overall_assessment}</div>
+    </div>
+
+    <footer class="meta">
+      Generated by ViralDecoder · {posts_analyzed} posts · {date_range}
+    </footer>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script>
+    Chart.defaults.color = '#9aa0a6';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.08)';
+
+    const palette = ['#1d9bf0','#00ba7c','#f91880','#ffad1f','#794bc4','#17bf63'];
+
+    // ── Reach bar chart ──
+    new Chart(document.getElementById('reachChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Followers', 'Following', 'Posts', 'Listed'],
+        datasets: [{
+          data: [/* followers, following, posts, listed */],
+          backgroundColor: palette,
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+
+    // ── Content mix donut ──
+    new Chart(document.getElementById('contentMixChart'), {
+      type: 'doughnut',
+      data: {
+        labels: [/* type labels */],
+        datasets: [{
+          data: [/* type shares */],
+          backgroundColor: palette,
+          borderWidth: 0,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'right' } }
+      }
+    });
+
+    // ── Engagement grouped bar ──
+    new Chart(document.getElementById('engagementChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Likes', 'Retweets', 'Replies', 'Quotes', 'Impressions'],
+        datasets: [{
+          label: 'Mean',
+          data: [/* mean values */],
+          backgroundColor: '#1d9bf0',
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+
+    // ── Themes horizontal bar ──
+    new Chart(document.getElementById('themesChart'), {
+      type: 'bar',
+      data: {
+        labels: [/* theme names */],
+        datasets: [{
+          label: 'Avg engagement',
+          data: [/* avg engagement per theme */],
+          backgroundColor: '#00ba7c',
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { x: { beginAtZero: true } }
+      }
+    });
+
+    // ── Heatmap: build CSS grid from data ──
+  </script>
+</body>
+</html>
