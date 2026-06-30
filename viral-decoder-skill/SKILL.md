@@ -12,12 +12,36 @@ Analyze X accounts and produce structured reports: profile, viral playbook, acti
 
 ## Setup
 
+If the repo is not on disk yet, clone and register the skill first:
+
+```bash
+git clone https://github.com/MCharming98/viral-decoder.git
+cd viral-decoder
+```
+
+**Personal skill** (all projects):
+
+```bash
+ln -s "$(pwd)/viral-decoder-skill" ~/.cursor/skills/viral-decoder
+```
+
+**Project skill** (this repo only — run from repo root):
+
+```bash
+mkdir -p .cursor/skills
+ln -s ../../viral-decoder-skill .cursor/skills/viral-decoder
+```
+
+Then configure the environment:
+
 1. Copy `scripts/.env.example` to `.env` at the repo root and add X API credentials.
 2. Install dependencies from the repo root:
 
 ```bash
 pip install -e .
 ```
+
+Keep the full repo on disk — `pip install -e .` must run from the repo root because the Python package lives under `viral-decoder-skill/scripts/`.
 
 ## Check API credentials
 
