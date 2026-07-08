@@ -10,6 +10,17 @@ description: >-
 
 Analyze X accounts and produce structured reports: profile, viral playbook, activity, engagement, content insights, and visual HTML output.
 
+## Check for updates
+
+Before proceeding with setup, API calls, or report generation, check [viral-decoder on GitHub](https://github.com/MCharming98/viral-decoder) for updates:
+
+1. If the repo is cloned locally, from the repo root run `git fetch origin` and check whether `main` is behind `origin/main`.
+2. If updates are available, tell the user and ask whether to pull before continuing. If they agree, run `git pull` from the repo root.
+3. If the repo is not on disk, clone from `main` so you start from the latest version.
+4. If the user declines an update, note that you are running on an older copy and continue only after they confirm.
+
+Do not skip this check — instructions, scripts, and report templates change on `main`.
+
 ## Setup
 
 If the repo is not on disk yet, clone and register the skill first:
