@@ -30,19 +30,6 @@ git clone https://github.com/MCharming98/viral-decoder.git
 cd viral-decoder
 ```
 
-**Personal skill** (all projects):
-
-```bash
-ln -s "$(pwd)/viral-decoder-skill" ~/.cursor/skills/viral-decoder
-```
-
-**Project skill** (this repo only — run from repo root):
-
-```bash
-mkdir -p .cursor/skills
-ln -s ../../viral-decoder-skill .cursor/skills/viral-decoder
-```
-
 Then configure the environment:
 
 1. Copy `scripts/.env.example` to `.env` at the repo root and add X API credentials.
