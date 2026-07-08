@@ -33,23 +33,13 @@ Synthesize a step-by-step playbook for how an account creates posts that go vira
 
 ```python
 user = get_user_by_username(client, username)
-payload = get_and_store_user_tweets(
+result = get_and_store_user_tweets(
     client,
     user["id"],
     username=user["username"],
     start_time=start_time,   # optional
     end_time=end_time,
 )
-
-while payload.get("meta", {}).get("next_token"):
-    payload = get_and_store_user_tweets(
-        client,
-        user["id"],
-        username=user["username"],
-        start_time=start_time,
-        end_time=end_time,
-        pagination_token=payload["meta"]["next_token"],
-    )
 
 tweets = load_stored_tweets(user["username"])
 ```

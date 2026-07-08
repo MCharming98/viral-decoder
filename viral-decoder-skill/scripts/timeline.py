@@ -93,6 +93,25 @@ def _fetch_and_store_range(
             break
 
 
+def _store_result(*, source: str, result_count: int) -> dict[str, Any]:
+    return {"source": source, "result_count": result_count}
+
+
+def _result_count_in_window(
+    tweets: list[dict[str, Any]],
+    *,
+    start_time: str,
+    end_time: str,
+    max_results: int,
+) -> int:
+    in_range = filter_tweets_by_time(
+        tweets,
+        start_time=start_time,
+        end_time=end_time,
+    )
+    return min(len(in_range), min(max_results, 100))
+
+
 def get_and_store_user_tweets(
     client: XClient,
     user_id: str,
@@ -106,7 +125,11 @@ def get_and_store_user_tweets(
     until_id: str | None = None,
     path: Path | str | None = None,
 ) -> dict[str, Any]:
-    """Fetch tweets, store them locally, and return results.
+    """Fetch tweets, store them locally, and return fetch metadata.
+
+    Returns ``{"source": ..., "result_count": ...}`` where ``source`` is one of
+    ``"stored"``, ``"stored+api"``, or ``"api"``. Use ``load_stored_tweets`` to
+    read the stored tweet data.
 
     Time window: use start_time/end_time (ISO 8601 UTC, e.g. 2024-01-01T00:00:00Z).
     ID window: use since_id/until_id for tweet ID bounds (both exclusive).
@@ -118,9 +141,8 @@ def get_and_store_user_tweets(
     a directory stores to `{path}/{username}.json`. Defaults to `tweets/{username}.json`.
 
     When start_time and end_time are set, checks stored tweets at path first:
-    - Fully covered: returns stored tweets without an API request.
-    - Partially covered: fetches only uncovered sub-ranges, then returns stored
-      tweets for the full requested window.
+    - Fully covered: stores nothing new and skips the API.
+    - Partially covered: fetches only uncovered sub-ranges (auto-paginated).
     """
     store_kwargs: dict[str, Any] = {}
     if path is not None:
@@ -139,23 +161,20 @@ def get_and_store_user_tweets(
             start_time=start_time,
             end_time=end_time,
         ):
-            filtered = filter_tweets_by_time(
-                stored,
-                start_time=start_time,
-                end_time=end_time,
-            )[: min(max_results, 100)]
             print(
                 "Warning: requested time range "
                 f"{start_time} to {end_time} is fully covered by stored tweets "
                 f"for @{username.lstrip('@')}; skipping API request."
             )
-            return {
-                "data": filtered,
-                "meta": {
-                    "result_count": len(filtered),
-                    "source": "stored",
-                },
-            }
+            return _store_result(
+                source="stored",
+                result_count=_result_count_in_window(
+                    stored,
+                    start_time=start_time,
+                    end_time=end_time,
+                    max_results=max_results,
+                ),
+            )
 
         gaps = uncovered_time_ranges(
             stored,
@@ -179,22 +198,15 @@ def get_and_store_user_tweets(
                 )
 
             updated = load_stored_tweets(username, **store_kwargs)
-            filtered = filter_tweets_by_time(
-                updated,
-                start_time=start_time,
-                end_time=end_time,
-            )[: min(max_results, 100)]
-            return {
-                "data": filtered,
-                "meta": {
-                    "result_count": len(filtered),
-                    "source": "stored+api",
-                    "gaps_filled": [
-                        {"start_time": gap_start, "end_time": gap_end}
-                        for gap_start, gap_end in gaps
-                    ],
-                },
-            }
+            return _store_result(
+                source="stored+api",
+                result_count=_result_count_in_window(
+                    updated,
+                    start_time=start_time,
+                    end_time=end_time,
+                    max_results=max_results,
+                ),
+            )
 
     params = _build_params(
         max_results=max_results,
@@ -206,4 +218,9 @@ def get_and_store_user_tweets(
     )
     payload = client.get(f"/users/{user_id}/tweets", params=params)
     store_tweets(username, payload, **store_kwargs)
-    return payload
+    data = payload.get("data") or []
+    meta = payload.get("meta") or {}
+    return _store_result(
+        source="api",
+        result_count=meta.get("result_count", len(data)),
+    )

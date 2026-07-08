@@ -30,7 +30,7 @@ Analyze posting activity using `get_and_store_user_tweets` and `load_stored_twee
 
 ```python
 user = get_user_by_username(client, username)
-payload = get_and_store_user_tweets(
+result = get_and_store_user_tweets(
     client,
     user["id"],
     username=user["username"],                  # required
@@ -39,23 +39,13 @@ payload = get_and_store_user_tweets(
     max_results=100,
 )
 
-while payload.get("meta", {}).get("next_token"):
-    payload = get_and_store_user_tweets(
-        client,
-        user["id"],
-        username=user["username"],
-        start_time="2024-01-01T00:00:00Z",
-        end_time="2024-06-01T00:00:00Z",
-        pagination_token=payload["meta"]["next_token"],
-    )
-
 tweets = load_stored_tweets(user["username"])
 ```
 
 ### Behavior
 
 - **Auto-store:** each API page is merged into `tweets/{username}.json` with deduplication by tweet `id`.
-- **Cache skip:** when `start_time` and `end_time` are fully covered by stored tweets, prints a warning and returns stored data (`meta.source == "stored"`) without an API call.
+- **Cache skip:** when `start_time` and `end_time` are fully covered by stored tweets, prints a warning and returns `source == "stored"` without an API call.
 - **ID bounds:** use `since_id` / `until_id` for tweet ID filters; these take precedence over time filters per the X API.
 - **Exclusions:** retweets and replies are excluded by default.
 

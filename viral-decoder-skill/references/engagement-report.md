@@ -31,23 +31,13 @@ Measure engagement using `get_and_store_user_tweets`, `load_stored_tweets`, and 
 
 ```python
 user = get_user_by_username(client, username)
-payload = get_and_store_user_tweets(
+result = get_and_store_user_tweets(
     client,
     user["id"],
     username=user["username"],
     start_time="2024-01-01T00:00:00Z",
     end_time="2024-06-01T00:00:00Z",
 )
-
-while payload.get("meta", {}).get("next_token"):
-    payload = get_and_store_user_tweets(
-        client,
-        user["id"],
-        username=user["username"],
-        start_time="2024-01-01T00:00:00Z",
-        end_time="2024-06-01T00:00:00Z",
-        pagination_token=payload["meta"]["next_token"],
-    )
 
 tweets = load_stored_tweets(user["username"])
 ```
@@ -121,6 +111,6 @@ Never list a top or underperforming post without its link.
 - Impression counts require appropriate API access tier.
 - Compare engagement rate to follower count, not absolute numbers alone.
 - Stored tweets include inline `media` metadata for correlating format with performance.
-- If `get_and_store_user_tweets` returns `meta.source == "stored"`, note that metrics are from cached data.
+- If `get_and_store_user_tweets` returns `source == "stored"`, note that metrics are from cached data.
 - Highlight outliers and possible viral posts.
 - When citing any tweet, always include its permalink as a markdown link.

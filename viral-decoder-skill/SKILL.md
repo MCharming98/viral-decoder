@@ -116,11 +116,13 @@ get_and_store_user_tweets(
 tweets = load_stored_tweets(user["username"], path="cache/alice.json")
 ```
 
-Use `get_tweets` for one-off API reads. Use `get_and_store_user_tweets` for report workflows — it deduplicates, merges, and skips refetch when the time range is already cached.
+Use `get_tweets` for one-off API reads. Use `get_and_store_user_tweets` for report workflows — it deduplicates, merges, and skips refetch when the time range is already cached. It returns only `{"source": ..., "result_count": ...}`; read tweets via `load_stored_tweets`.
 
 ### Fetching tweets
 
 **Default count:** Timeline fetches return the latest **100 tweets** by default (`max_results=100` in `get_tweets` and `get_and_store_user_tweets`). Do not change this without asking the user first — confirm whether they want more or fewer tweets before passing a different `max_results`.
+
+**No pagination by default:** Fetch **one page only** (up to 100 tweets). Do **not** read the next page — do not loop on `next_token`, pass `pagination_token`, or make follow-up timeline calls to pull additional pages unless the user explicitly asks for more tweets, a larger sample, or full history for the window.
 
 **Check storage before the API:** Before calling `get_tweets` or `get_and_store_user_tweets`, always check whether tweets are already stored locally:
 
@@ -135,8 +137,9 @@ if stored:
 ```
 
 - Prefer `load_stored_tweets` when existing data is sufficient for the report or time range.
-- Use `get_and_store_user_tweets` with `start_time` / `end_time` when you need a specific window — it skips the API if that range is fully cached and only fetches uncovered gaps.
+- Use `get_and_store_user_tweets` with `start_time` / `end_time` when you need a specific window — it skips the API if that range is fully cached. If the window is not cached, fetch one page only unless the user asked for more.
 - Call the API only when stored tweets are missing, incomplete for the requested window, or the user explicitly wants a fresh fetch.
+- If stored data covers fewer tweets than the user requested, say so and ask before paginating.
 
 ### Data storage
 
@@ -178,5 +181,6 @@ Each sub-report can also run standalone. All reports link to X when citing profi
 - `get_and_store_user_tweets` handles fetch, deduplication, and storage — use `get_tweets` when you only need the API response without writing to disk.
 - Pass `path` to `get_and_store_user_tweets`, `store_tweets`, and `load_stored_tweets` to override the default `tweets/{username}.json` location.
 - Use `load_stored_tweets` for analysis, not individual API pages.
-- Flag data limitations (protected account, small sample, missing impressions, cached-only data).
+- Do not paginate timeline fetches unless the user explicitly requests additional pages or a larger sample.
+- Flag data limitations (protected account, small sample, missing impressions, cached-only data, partial pagination).
 - Stay factual — this is analysis, not judgment.
